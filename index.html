@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>לומדים לבד: ישר, אמצע קטע ומרחק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFCFE; --grid:#E2EAF4; --ink:#1D2B4F; --soft:#5A6788;
+  --blue:#2F5DA8; --blue-bg:#EAF0FA; --red:#C8352E; --green:#2E7D4F; --green-bg:#E7F4EC;
+  --red-bg:#FBEBEA; --card:#FFFFFF; --line:#C9D5E6; --amber:#B7791F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#111827; --grid:#1C2638; --ink:#E6ECF5; --soft:#9AA7C2;
+    --blue:#8FB3F0; --blue-bg:#1B2A45; --red:#F08A80; --green:#7FD1A0; --green-bg:#163325;
+    --red-bg:#3A1D1C; --card:#172033; --line:#2C3A55; --amber:#E9B562;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#111827; --grid:#1C2638; --ink:#E6ECF5; --soft:#9AA7C2;
+  --blue:#8FB3F0; --blue-bg:#1B2A45; --red:#F08A80; --green:#7FD1A0; --green-bg:#163325;
+  --red-bg:#3A1D1C; --card:#172033; --line:#2C3A55; --amber:#E9B562;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:"Assistant","Arial Hebrew",Arial,sans-serif; font-size:18px; line-height:1.6;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+header h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:900;font-size:clamp(30px,5vw,46px);line-height:1.1;margin:0 0 6px}
+header p{margin:0;color:var(--soft);max-width:60ch}
+.progress{margin-top:14px;display:flex;align-items:center;gap:12px;font-weight:600}
+.bar{flex:0 1 220px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);transition:width .4s}
+
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);margin:22px -18px 0;padding:10px 18px;border-bottom:2px solid var(--ink);display:flex;gap:6px;overflow-x:auto}
+nav button{font:inherit;font-weight:700;font-size:17px;border:2px solid var(--ink);background:var(--card);color:var(--ink);padding:6px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+nav button .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line);margin-inline-start:8px;vertical-align:middle}
+nav button .dot.done{background:var(--green)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+section.topic{display:none;padding-top:24px}
+section.topic.active{display:block}
+h2{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:30px;margin:0 0 14px}
+h3{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:700;font-size:22px;margin:30px 0 10px}
+
+.formula{background:var(--card);border:2px solid var(--ink);border-radius:4px;padding:20px 22px;box-shadow:6px 6px 0 var(--blue)}
+.formula .big{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:clamp(26px,5vw,38px);text-align:center;margin:6px 0 12px}
+.formula .legend{color:var(--soft);font-size:17px;margin:0}
+.formula .legend+.big{margin-top:18px}
+.math,.big{direction:ltr;unicode-bidi:isolate;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;white-space:nowrap}
+.math i,.big i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 2px}
+.frac>span:last-child{border-top:1.5px solid currentColor;padding-top:1px}
+.big .frac{font-size:.8em}
+.rad{display:inline-block;position:relative;border-top:1.6px solid currentColor;padding:3px 4px 0;margin-left:.8em;line-height:1.3}
+.rad::before{content:"";position:absolute;left:-.8em;top:-1.6px;bottom:-.05em;width:.8em;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 20' preserveAspectRatio='none'%3E%3Cpolyline points='0.6,12.5 3,11 6.2,19.2 9.7,0.7' fill='none' stroke='black' stroke-width='1.3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 20' preserveAspectRatio='none'%3E%3Cpolyline points='0.6,12.5 3,11 6.2,19.2 9.7,0.7' fill='none' stroke='black' stroke-width='1.3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.rad sub,.rad sup{line-height:0}
+
+.example{display:grid;grid-template-columns:1fr minmax(240px,320px);gap:22px;align-items:start}
+@media (max-width:720px){.example{grid-template-columns:1fr}}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:10px 44px 10px 0;border-bottom:1px dashed var(--line)}
+.steps li::before{content:counter(s);position:absolute;right:0;top:10px;width:30px;height:30px;border-radius:50%;border:2px solid var(--blue);color:var(--blue);font-weight:700;display:grid;place-items:center;font-size:16px}
+.steps .math{font-size:20px}
+.task{background:var(--blue-bg);border-radius:4px;padding:12px 16px;margin-bottom:6px}
+.graph{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:8px}
+.graph svg{width:100%;height:auto;display:block}
+.graph figcaption{font-size:15px;color:var(--soft);padding:4px 4px 0}
+.answer{font-weight:700;color:var(--green)}
+
+.ex{background:var(--card);border:2px solid var(--line);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.ex.ok{border-color:var(--green)}
+.ex h4{margin:0 0 6px;font-size:19px}
+.ex .q{margin:0 0 12px}
+.ex .q .math{font-size:20px}
+.ans-row{direction:ltr;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:22px;justify-content:flex-end}
+.ans-row input{width:84px;font:inherit;font-size:20px;text-align:center;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.ans-row input.good{border-color:var(--green);background:var(--green-bg)}
+.ans-row input.bad{border-color:var(--red);background:var(--red-bg)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tools button{font:inherit;font-weight:700;font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer;border:2px solid var(--ink);background:var(--card);color:var(--ink)}
+.tools button.primary{background:var(--ink);color:var(--paper)}
+.fb{margin-top:10px;font-weight:600;min-height:1.6em}
+.fb.good{color:var(--green)} .fb.bad{color:var(--red)}
+.hint,.sol{display:none;margin-top:10px;padding:10px 14px;border-inline-start:4px solid var(--amber);background:var(--paper)}
+.sol{border-color:var(--blue)}
+.hint.show,.sol.show{display:block}
+.sol ol{margin:4px 0;padding-inline-start:22px}
+.note{font-size:15px;color:var(--soft);margin-top:6px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+@media (max-width:560px){.compare{grid-template-columns:1fr}}
+.compare div{border:2px solid var(--ink);padding:12px 14px;background:var(--card)}
+.compare b{display:block;font-family:"Frank Ruhl Libre",Georgia,serif;font-size:20px}
+.compare .math{font-size:24px;display:block;text-align:center;margin:6px 0}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>משוואת ישר, אמצע קטע ומרחק</h1>
+  <p>בכל נושא: הנוסחה, דוגמה פתורה שלב אחר שלב, ושני תרגילים לפתרון עצמאי עם רמז ופתרון מלא.</p>
+  <div class="progress"><div class="bar"><i id="barFill"></i></div><span id="progText">פתרת 0 מתוך 8 תרגילים</span></div>
+</header>
+
+<nav role="tablist" aria-label="נושאים">
+  <button role="tab" aria-selected="true" data-t="t1">משוואת ישר<span class="dot" id="d-t1"></span></button>
+  <button role="tab" aria-selected="false" data-t="t2">מקבילים ומאונכים<span class="dot" id="d-t2"></span></button>
+  <button role="tab" aria-selected="false" data-t="t3">אמצע קטע<span class="dot" id="d-t3"></span></button>
+  <button role="tab" aria-selected="false" data-t="t4">מרחק בין נקודות<span class="dot" id="d-t4"></span></button>
+</nav>
+
+<!-- ========== נושא 1 ========== -->
+<section class="topic active" id="t1" role="tabpanel">
+  <h2>מציאת משוואת ישר</h2>
+  <div class="formula">
+    <p class="legend">משוואת ישר לפי נקודה ושיפוע:</p>
+    <div class="big"><i>y</i> − <i>y</i><sub>1</sub> = <i>m</i>(<i>x</i> − <i>x</i><sub>1</sub>)</div>
+    <p class="legend"><span class="math"><i>m</i></span> הוא שיפוע הישר, ו־<span class="math">(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span> היא נקודה שהישר עובר דרכה.</p>
+    <p class="legend">אם נתונות שתי נקודות ואין שיפוע, מחשבים קודם את השיפוע:</p>
+    <div class="big"><i>m</i> = <span class="frac"><span><i>y</i><sub>2</sub> − <i>y</i><sub>1</sub></span><span><i>x</i><sub>2</sub> − <i>x</i><sub>1</sub></span></span></div>
+  </div>
+
+  <h3>דוגמה פתורה</h3>
+  <div class="example">
+    <div>
+      <div class="task">מצאו את משוואת הישר העובר דרך הנקודות <span class="math">A(1, 1)</span> ו־<span class="math">B(3, 5)</span>.</div>
+      <ol class="steps">
+        <li>מחשבים שיפוע: <span class="math"><i>m</i> = <span class="frac"><span>5 − 1</span><span>3 − 1</span></span> = <span class="frac"><span>4</span><span>2</span></span> = 2</span></li>
+        <li>בוחרים נקודה אחת, למשל <span class="math">A(1, 1)</span>, כלומר <span class="math"><i>x</i><sub>1</sub> = 1, <i>y</i><sub>1</sub> = 1</span>.</li>
+        <li>מציבים בנוסחה: <span class="math"><i>y</i> − 1 = 2(<i>x</i> − 1)</span></li>
+        <li>פותחים סוגריים: <span class="math"><i>y</i> − 1 = 2<i>x</i> − 2</span></li>
+        <li>מעבירים אגפים: <span class="math answer"><i>y</i> = 2<i>x</i> − 1</span></li>
+      </ol>
+      <p class="note">בדיקה: מציבים את B. <span class="math">2·3 − 1 = 5</span> ✓ הנקודה על הישר.</p>
+    </div>
+    <figure class="graph" style="margin:0"><svg id="g1" aria-label="גרף הישר y=2x-1 עם הנקודות A ו-B"></svg><figcaption>הישר <span class="math"><i>y</i> = 2<i>x</i> − 1</span> עובר דרך A ו־B</figcaption></figure>
+  </div>
+
+  <h3>תרגול</h3>
+  <div class="ex" id="e1">
+    <h4>תרגיל 1</h4>
+    <p class="q">מצאו את משוואת הישר ששיפועו <span class="math"><i>m</i> = 3</span> והוא עובר דרך הנקודה <span class="math">(1, −2)</span>.</p>
+    <div class="ans-row"><i>y</i> = <input data-a="3" aria-label="שיפוע" inputmode="text"> <i>x</i> + <input data-a="-5" aria-label="מספר חופשי" inputmode="text"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">השיפוע כבר נתון. הציבו בנוסחה <span class="math"><i>x</i><sub>1</sub> = 1, <i>y</i><sub>1</sub> = −2</span>, ושימו לב ש־<span class="math"><i>y</i> − (−2) = <i>y</i> + 2</span>.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><i>y</i> − (−2) = 3(<i>x</i> − 1)</span></li>
+      <li><span class="math"><i>y</i> + 2 = 3<i>x</i> − 3</span></li>
+      <li><span class="math answer"><i>y</i> = 3<i>x</i> − 5</span></li>
+    </ol></div>
+  </div>
+  <div class="ex" id="e2">
+    <h4>תרגיל 2</h4>
+    <p class="q">מצאו את משוואת הישר העובר דרך הנקודות <span class="math">(−1, 4)</span> ו־<span class="math">(2, −2)</span>.</p>
+    <div class="ans-row"><i>y</i> = <input data-a="-2" aria-label="שיפוע"> <i>x</i> + <input data-a="2" aria-label="מספר חופשי"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">קודם השיפוע: <span class="math"><i>m</i> = <span class="frac"><span>−2 − 4</span><span>2 − (−1)</span></span></span>. אחר כך הציבו נקודה אחת בנוסחה.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><i>m</i> = <span class="frac"><span>−6</span><span>3</span></span> = −2</span></li>
+      <li>לפי הנקודה <span class="math">(−1, 4)</span>: <span class="math"><i>y</i> − 4 = −2(<i>x</i> + 1)</span></li>
+      <li><span class="math"><i>y</i> − 4 = −2<i>x</i> − 2</span></li>
+      <li><span class="math answer"><i>y</i> = −2<i>x</i> + 2</span></li>
+    </ol></div>
+  </div>
+</section>
+
+<!-- ========== נושא 2 ========== -->
+<section class="topic" id="t2" role="tabpanel">
+  <h2>ישרים מקבילים וישרים מאונכים</h2>
+  <div class="formula">
+    <div class="compare">
+      <div><b>ישרים מקבילים</b><span class="math"><i>m</i><sub>1</sub> = <i>m</i><sub>2</sub></span>שיפועים שווים.</div>
+      <div><b>ישרים מאונכים</b><span class="math"><i>m</i><sub>1</sub> · <i>m</i><sub>2</sub> = −1</span>הופכים את השבר ומחליפים סימן.</div>
+    </div>
+    <p class="legend" style="margin-top:12px">אחרי שמוצאים את השיפוע המתאים, משתמשים שוב בנוסחה <span class="math"><i>y</i> − <i>y</i><sub>1</sub> = <i>m</i>(<i>x</i> − <i>x</i><sub>1</sub>)</span>.</p>
+  </div>
+
+  <h3>דוגמה פתורה</h3>
+  <div class="example">
+    <div>
+      <div class="task">נתון הישר <span class="math"><i>y</i> = 2<i>x</i> + 1</span> והנקודה <span class="math">P(4, 1)</span>.<br>א. מצאו ישר מקביל לו העובר דרך P.<br>ב. מצאו ישר מאונך לו העובר דרך P.</div>
+      <ol class="steps">
+        <li>שיפוע הישר הנתון: <span class="math"><i>m</i> = 2</span></li>
+        <li>א. מקביל, אז <span class="math"><i>m</i> = 2</span>: <span class="math"><i>y</i> − 1 = 2(<i>x</i> − 4)</span>, כלומר <span class="math answer"><i>y</i> = 2<i>x</i> − 7</span></li>
+        <li>ב. מאונך, אז <span class="math">2 · <i>m</i> = −1</span>, ולכן <span class="math"><i>m</i> = −<span class="frac"><span>1</span><span>2</span></span></span></li>
+        <li><span class="math"><i>y</i> − 1 = −<span class="frac"><span>1</span><span>2</span></span>(<i>x</i> − 4)</span>, ואחרי פתיחת סוגריים <span class="math"><i>y</i> − 1 = −<span class="frac"><span>1</span><span>2</span></span><i>x</i> + 2</span></li>
+        <li><span class="math answer"><i>y</i> = −<span class="frac"><span>1</span><span>2</span></span><i>x</i> + 3</span></li>
+      </ol>
+    </div>
+    <figure class="graph" style="margin:0"><svg id="g2" aria-label="הישר הנתון, ישר מקביל וישר מאונך דרך P"></svg><figcaption>אפור: הישר הנתון. כחול: מקביל. אדום: מאונך.</figcaption></figure>
+  </div>
+
+  <h3>תרגול</h3>
+  <p class="note">אפשר לכתוב שבר עם קו נטוי, למשל <span class="math">-1/3</span>.</p>
+  <div class="ex" id="e3">
+    <h4>תרגיל 1</h4>
+    <p class="q">מצאו את משוואת הישר העובר דרך הנקודה <span class="math">(2, 5)</span> ומקביל לישר <span class="math"><i>y</i> = −2<i>x</i> + 7</span>.</p>
+    <div class="ans-row"><i>y</i> = <input data-a="-2" aria-label="שיפוע"> <i>x</i> + <input data-a="9" aria-label="מספר חופשי"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">ישר מקביל מקבל את אותו שיפוע: <span class="math"><i>m</i> = −2</span>. עכשיו הציבו את הנקודה <span class="math">(2, 5)</span>.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><i>m</i> = −2</span></li>
+      <li><span class="math"><i>y</i> − 5 = −2(<i>x</i> − 2)</span></li>
+      <li><span class="math"><i>y</i> − 5 = −2<i>x</i> + 4</span></li>
+      <li><span class="math answer"><i>y</i> = −2<i>x</i> + 9</span></li>
+    </ol></div>
+  </div>
+  <div class="ex" id="e4">
+    <h4>תרגיל 2</h4>
+    <p class="q">מצאו את משוואת הישר העובר דרך הנקודה <span class="math">(3, 2)</span> ומאונך לישר <span class="math"><i>y</i> = 3<i>x</i> − 1</span>.</p>
+    <div class="ans-row"><i>y</i> = <input data-a="-1/3" aria-label="שיפוע"> <i>x</i> + <input data-a="3" aria-label="מספר חופשי"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">השיפוע של הישר הנתון הוא 3. איזה מספר כפול 3 נותן <span class="math">−1</span>?</div>
+    <div class="sol"><ol>
+      <li><span class="math">3 · <i>m</i> = −1</span>, ולכן <span class="math"><i>m</i> = −<span class="frac"><span>1</span><span>3</span></span></span></li>
+      <li><span class="math"><i>y</i> − 2 = −<span class="frac"><span>1</span><span>3</span></span>(<i>x</i> − 3)</span></li>
+      <li><span class="math"><i>y</i> − 2 = −<span class="frac"><span>1</span><span>3</span></span><i>x</i> + 1</span></li>
+      <li><span class="math answer"><i>y</i> = −<span class="frac"><span>1</span><span>3</span></span><i>x</i> + 3</span></li>
+    </ol></div>
+  </div>
+</section>
+
+<!-- ========== נושא 3 ========== -->
+<section class="topic" id="t3" role="tabpanel">
+  <h2>אמצע קטע</h2>
+  <div class="formula">
+    <p class="legend">אמצע הקטע AB, כאשר <span class="math">A(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span> ו־<span class="math">B(<i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>)</span>:</p>
+    <div class="big">M( <span class="frac"><span><i>x</i><sub>1</sub> + <i>x</i><sub>2</sub></span><span>2</span></span> , <span class="frac"><span><i>y</i><sub>1</sub> + <i>y</i><sub>2</sub></span><span>2</span></span> )</div>
+    <p class="legend">כל שיעור של האמצע הוא הממוצע של שני השיעורים המתאימים.</p>
+  </div>
+
+  <h3>דוגמה פתורה</h3>
+  <div class="example">
+    <div>
+      <div class="task">מצאו את אמצע הקטע שקצותיו <span class="math">A(2, 5)</span> ו־<span class="math">B(8, −1)</span>.</div>
+      <ol class="steps">
+        <li>שיעור ה־<span class="math"><i>x</i></span>: <span class="math"><span class="frac"><span>2 + 8</span><span>2</span></span> = <span class="frac"><span>10</span><span>2</span></span> = 5</span></li>
+        <li>שיעור ה־<span class="math"><i>y</i></span>: <span class="math"><span class="frac"><span>5 + (−1)</span><span>2</span></span> = <span class="frac"><span>4</span><span>2</span></span> = 2</span></li>
+        <li>האמצע: <span class="math answer">M(5, 2)</span></li>
+      </ol>
+    </div>
+    <figure class="graph" style="margin:0"><svg id="g3" aria-label="הקטע AB ואמצעו M"></svg><figcaption>M נמצאת בדיוק באמצע הדרך בין A ל־B</figcaption></figure>
+  </div>
+
+  <h3>תרגול</h3>
+  <div class="ex" id="e5">
+    <h4>תרגיל 1</h4>
+    <p class="q">מצאו את אמצע הקטע שקצותיו <span class="math">A(−4, 3)</span> ו־<span class="math">B(6, 9)</span>.</p>
+    <div class="ans-row">M( <input data-a="1" aria-label="שיעור x"> , <input data-a="6" aria-label="שיעור y"> )</div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">חברו את שני ה־<span class="math"><i>x</i></span> וחלקו ב־2, ואחר כך אותו דבר עם שני ה־<span class="math"><i>y</i></span>.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><span class="frac"><span>−4 + 6</span><span>2</span></span> = <span class="frac"><span>2</span><span>2</span></span> = 1</span></li>
+      <li><span class="math"><span class="frac"><span>3 + 9</span><span>2</span></span> = <span class="frac"><span>12</span><span>2</span></span> = 6</span></li>
+      <li><span class="math answer">M(1, 6)</span></li>
+    </ol></div>
+  </div>
+  <div class="ex" id="e6">
+    <h4>תרגיל 2</h4>
+    <p class="q">מצאו את אמצע הקטע שקצותיו <span class="math">A(3, −7)</span> ו־<span class="math">B(−1, 1)</span>.</p>
+    <div class="ans-row">M( <input data-a="1" aria-label="שיעור x"> , <input data-a="-3" aria-label="שיעור y"> )</div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">היזהרו עם המספרים השליליים: <span class="math">3 + (−1)</span> ו־<span class="math">−7 + 1</span>.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><span class="frac"><span>3 + (−1)</span><span>2</span></span> = <span class="frac"><span>2</span><span>2</span></span> = 1</span></li>
+      <li><span class="math"><span class="frac"><span>−7 + 1</span><span>2</span></span> = <span class="frac"><span>−6</span><span>2</span></span> = −3</span></li>
+      <li><span class="math answer">M(1, −3)</span></li>
+    </ol></div>
+  </div>
+</section>
+
+<!-- ========== נושא 4 ========== -->
+<section class="topic" id="t4" role="tabpanel">
+  <h2>מרחק בין שתי נקודות</h2>
+  <div class="formula">
+    <p class="legend">המרחק בין <span class="math">A(<i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>)</span> ל־<span class="math">B(<i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>)</span>:</p>
+    <div class="big"><i>d</i> = <span class="rad">(<i>x</i><sub>2</sub> − <i>x</i><sub>1</sub>)<sup>2</sup> + (<i>y</i><sub>2</sub> − <i>y</i><sub>1</sub>)<sup>2</sup></span></div>
+    <p class="legend">זה בעצם משפט פיתגורס: ההפרש ב־<span class="math"><i>x</i></span> וההפרש ב־<span class="math"><i>y</i></span> הם הניצבים, והמרחק הוא היתר.</p>
+  </div>
+
+  <h3>דוגמה פתורה</h3>
+  <div class="example">
+    <div>
+      <div class="task">מצאו את המרחק בין הנקודות <span class="math">A(−2, −1)</span> ו־<span class="math">B(1, 3)</span>.</div>
+      <ol class="steps">
+        <li>מציבים בנוסחה: <span class="math"><i>x</i><sub>1</sub> = −2, <i>y</i><sub>1</sub> = −1, <i>x</i><sub>2</sub> = 1, <i>y</i><sub>2</sub> = 3</span><br><span class="math"><i>d</i> = <span class="rad">(1 − (−2))<sup>2</sup> + (3 − (−1))<sup>2</sup></span></span></li>
+        <li>מינוס מינוס זה פלוס: <span class="math"><i>d</i> = <span class="rad">(1 + 2)<sup>2</sup> + (3 + 1)<sup>2</sup></span></span></li>
+        <li>מחשבים בסוגריים ומעלים בריבוע: <span class="math"><i>d</i> = <span class="rad">3<sup>2</sup> + 4<sup>2</sup></span> = <span class="rad">9 + 16</span> = <span class="rad">25</span></span></li>
+        <li><span class="math answer"><i>d</i> = 5</span></li>
+      </ol>
+    </div>
+    <figure class="graph" style="margin:0"><svg id="g4" aria-label="המרחק בין A ל-B כיתר במשולש ישר זווית"></svg><figcaption>הניצבים 3 ו־4, היתר הוא המרחק 5</figcaption></figure>
+  </div>
+
+  <h3>תרגול</h3>
+  <div class="ex" id="e7">
+    <h4>תרגיל 1</h4>
+    <p class="q">מצאו את המרחק בין הנקודות <span class="math">A(−2, 1)</span> ו־<span class="math">B(4, 9)</span>.</p>
+    <div class="ans-row"><i>d</i> = <input data-a="10" aria-label="המרחק"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">הפרש ה־<span class="math"><i>x</i></span> הוא <span class="math">4 − (−2)</span>. אל תשכחו שמינוס כפול מינוס הוא פלוס.</div>
+    <div class="sol"><ol>
+      <li><span class="math"><i>d</i> = <span class="rad">(4 − (−2))<sup>2</sup> + (9 − 1)<sup>2</sup></span></span></li>
+      <li><span class="math"><i>d</i> = <span class="rad">6<sup>2</sup> + 8<sup>2</sup></span> = <span class="rad">36 + 64</span> = <span class="rad">100</span></span></li>
+      <li><span class="math answer"><i>d</i> = 10</span></li>
+    </ol></div>
+  </div>
+  <div class="ex" id="e8">
+    <h4>תרגיל 2</h4>
+    <p class="q">מצאו את המרחק בין הנקודות <span class="math">A(1, −3)</span> ו־<span class="math">B(6, 9)</span>.</p>
+    <div class="ans-row"><i>d</i> = <input data-a="13" aria-label="המרחק"></div>
+    <div class="tools"><button class="primary" data-act="check">בדיקה</button><button data-act="hint">רמז</button><button data-act="sol">פתרון מלא</button></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="hint">הפרש ה־<span class="math"><i>y</i></span> הוא <span class="math">9 − (−3) = 12</span>. מה הפרש ה־<span class="math"><i>x</i></span>?</div>
+    <div class="sol"><ol>
+      <li><span class="math"><i>d</i> = <span class="rad">(6 − 1)<sup>2</sup> + (9 − (−3))<sup>2</sup></span></span></li>
+      <li><span class="math"><i>d</i> = <span class="rad">5<sup>2</sup> + 12<sup>2</sup></span> = <span class="rad">25 + 144</span> = <span class="rad">169</span></span></li>
+      <li><span class="math answer"><i>d</i> = 13</span></li>
+    </ol></div>
+  </div>
+</section>
+</div>
+
+<script>
+// ---------- טאבים ----------
+const tabs=[...document.querySelectorAll('nav button')];
+tabs.forEach(b=>b.addEventListener('click',()=>{
+  tabs.forEach(t=>t.setAttribute('aria-selected',t===b));
+  document.querySelectorAll('.topic').forEach(s=>s.classList.toggle('active',s.id===b.dataset.t));
+  window.scrollTo({top:0});
+}));
+
+// ---------- בדיקת תשובות ----------
+function parseNum(s){
+  s=s.trim().replace(/\s+/g,'').replace(/[−–]/g,'-').replace(',', '.');
+  if(s===''||s==='+') return NaN;
+  if(s==='-') return NaN;
+  const m=s.match(/^([+-]?)(\d*\.?\d+)\/(\d*\.?\d+)$/);
+  if(m){const v=parseFloat(m[2])/parseFloat(m[3]);return m[1]==='-'?-v:v;}
+  if(/^[+-]?\d*\.?\d+$/.test(s)) return parseFloat(s);
+  return NaN;
+}
+const solved=new Set(); const topicOf={e1:'t1',e2:'t1',e3:'t2',e4:'t2',e5:'t3',e6:'t3',e7:'t4',e8:'t4'};
+function updateProgress(){
+  const n=solved.size;
+  document.getElementById('barFill').style.width=(n/8*100)+'%';
+  document.getElementById('progText').textContent=n===8?'כל הכבוד! פתרת את כל 8 התרגילים':`פתרת ${n} מתוך 8 תרגילים`;
+  ['t1','t2','t3','t4'].forEach(t=>{
+    const all=Object.keys(topicOf).filter(e=>topicOf[e]===t).every(e=>solved.has(e));
+    document.getElementById('d-'+t).classList.toggle('done',all);
+  });
+}
+document.querySelectorAll('.ex').forEach(ex=>{
+  const inputs=[...ex.querySelectorAll('input')], fb=ex.querySelector('.fb');
+  inputs.forEach(i=>{i.setAttribute('autocomplete','off');i.addEventListener('keydown',e=>{if(e.key==='Enter')check();});i.addEventListener('input',()=>i.classList.remove('good','bad'));});
+  function check(){
+    let empty=false, allGood=true;
+    inputs.forEach(i=>{
+      if(i.value.trim()===''){empty=true;allGood=false;i.classList.remove('good','bad');return;}
+      const v=parseNum(i.value), a=parseNum(i.dataset.a);
+      const ok=Math.abs(v-a)<1e-6;
+      i.classList.toggle('good',ok); i.classList.toggle('bad',!ok);
+      if(!ok) allGood=false;
+    });
+    if(allGood){fb.textContent='נכון! כל הכבוד.';fb.className='fb good';ex.classList.add('ok');solved.add(ex.id);updateProgress();}
+    else if(empty){fb.textContent='מלאו את כל המשבצות ואז לחצו על בדיקה.';fb.className='fb bad';}
+    else{fb.textContent='לא בדיוק. המשבצת האדומה שגויה. נסו שוב או פתחו רמז.';fb.className='fb bad';}
+  }
+  ex.querySelector('[data-act="check"]').addEventListener('click',check);
+  ex.querySelector('[data-act="hint"]').addEventListener('click',e=>{const h=ex.querySelector('.hint');h.classList.toggle('show');e.target.textContent=h.classList.contains('show')?'הסתרת רמז':'רמז';});
+  ex.querySelector('[data-act="sol"]').addEventListener('click',e=>{const s=ex.querySelector('.sol');s.classList.toggle('show');e.target.textContent=s.classList.contains('show')?'הסתרת פתרון':'פתרון מלא';});
+});
+
+// ---------- גרפים ----------
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent&&parent.appendChild(e);return e;}
+function drawGraph(id,cfg){
+  const svg=document.getElementById(id), S=300, pad=14;
+  const {xmin,xmax,ymin,ymax}=cfg;
+  const sx=(S-2*pad)/(xmax-xmin), sy=(S-2*pad)/(ymax-ymin);
+  const X=x=>pad+(x-xmin)*sx, Y=y=>S-pad-(y-ymin)*sy;
+  svg.setAttribute('viewBox',`0 0 ${S} ${S}`);
+  const cid=id+'clip';
+  const defs=el('defs',{},svg); const cp=el('clipPath',{id:cid},defs); el('rect',{x:pad,y:pad,width:S-2*pad,height:S-2*pad},cp);
+  for(let x=Math.ceil(xmin);x<=xmax;x++) el('line',{x1:X(x),x2:X(x),y1:pad,y2:S-pad,stroke:'var(--grid)','stroke-width':1},svg);
+  for(let y=Math.ceil(ymin);y<=ymax;y++) el('line',{y1:Y(y),y2:Y(y),x1:pad,x2:S-pad,stroke:'var(--grid)','stroke-width':1},svg);
+  el('line',{x1:X(xmin),x2:X(xmax),y1:Y(0),y2:Y(0),stroke:'var(--soft)','stroke-width':1.5},svg);
+  el('line',{x1:X(0),x2:X(0),y1:Y(ymin),y2:Y(ymax),stroke:'var(--soft)','stroke-width':1.5},svg);
+  const t=el('text',{x:X(xmax)-4,y:Y(0)-6,'text-anchor':'end','font-size':13,fill:'var(--soft)','font-style':'italic','font-family':'serif'},svg);t.textContent='x';
+  const t2=el('text',{x:X(0)+6,y:Y(ymax)+14,'font-size':13,fill:'var(--soft)','font-style':'italic','font-family':'serif'},svg);t2.textContent='y';
+  const g=el('g',{'clip-path':`url(#${cid})`},svg);
+  (cfg.lines||[]).forEach(L=>el('line',{x1:X(xmin),y1:Y(L.m*xmin+L.b),x2:X(xmax),y2:Y(L.m*xmax+L.b),stroke:L.c,'stroke-width':L.w||2.5,'stroke-dasharray':L.dash||''},g));
+  (cfg.segs||[]).forEach(s=>el('line',{x1:X(s[0][0]),y1:Y(s[0][1]),x2:X(s[1][0]),y2:Y(s[1][1]),stroke:s[2],'stroke-width':s[3]||2.5,'stroke-dasharray':s[4]||''},g));
+  (cfg.labels||[]).forEach(l=>{const tx=el('text',{x:X(l.x),y:Y(l.y),'font-size':15,'font-weight':700,fill:l.c,'text-anchor':'middle','font-family':'serif'},svg);tx.textContent=l.t;});
+  (cfg.pts||[]).forEach(p=>{
+    el('circle',{cx:X(p.x),cy:Y(p.y),r:5,fill:p.c||'var(--ink)',stroke:'var(--card)','stroke-width':2},svg);
+    const tx=el('text',{x:X(p.x)+(p.dx||8),y:Y(p.y)+(p.dy||-8),'font-size':14,'font-weight':700,fill:p.c||'var(--ink)','text-anchor':p.dx<0?'end':'start'},svg);
+    tx.setAttribute('direction','ltr');tx.textContent=p.t;
+  });
+}
+drawGraph('g1',{xmin:-2,xmax:5,ymin:-3,ymax:7,
+  lines:[{m:2,b:-1,c:'var(--blue)'}],
+  pts:[{x:1,y:1,t:'A(1,1)',dx:10,dy:6},{x:3,y:5,t:'B(3,5)',dx:-10,dy:-6}]});
+drawGraph('g2',{xmin:-2,xmax:8,ymin:-4,ymax:8,
+  lines:[{m:2,b:1,c:'var(--soft)',w:2,dash:'5 4'},{m:2,b:-7,c:'var(--blue)'},{m:-0.5,b:3,c:'var(--red)'}],
+  pts:[{x:4,y:1,t:'P(4,1)',dx:10,dy:16}]});
+drawGraph('g3',{xmin:-1,xmax:10,ymin:-3,ymax:7,
+  segs:[[[2,5],[8,-1],'var(--blue)']],
+  pts:[{x:2,y:5,t:'A(2,5)',dx:8,dy:-8},{x:8,y:-1,t:'B(8,−1)',dx:-8,dy:-8},{x:5,y:2,t:'M(5,2)',c:'var(--red)',dx:10,dy:-4}]});
+drawGraph('g4',{xmin:-4,xmax:3,ymin:-3,ymax:5,
+  segs:[[[-2,-1],[1,-1],'var(--amber)',2,'5 4'],[[1,-1],[1,3],'var(--amber)',2,'5 4'],[[-2,-1],[1,3],'var(--blue)',3]],
+  labels:[{x:-0.5,y:-1.7,t:'3',c:'var(--amber)'},{x:1.45,y:1.1,t:'4',c:'var(--amber)'},{x:-1.4,y:1.6,t:'d = 5',c:'var(--blue)'}],
+  pts:[{x:-2,y:-1,t:'A(−2,−1)',dx:-8,dy:18},{x:1,y:3,t:'B(1,3)',dx:-8,dy:-8}]});
+updateProgress();
+</script>
+</body>
+</html>
